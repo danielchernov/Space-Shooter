@@ -27,12 +27,18 @@ public class Player : MonoBehaviour
     private bool _hasSpeed = false;
 
     [SerializeField]
+    private int _score;
+
+    [SerializeField]
     private GameObject _shield;
+
+    private UIManager _uiManager;
 
     void Start()
     {
         transform.position = Vector3.zero;
         _spawnManager = GameObject.Find("SpawnManager").GetComponent<SpawnManager>();
+        _uiManager = GameObject.Find("Canvas").GetComponent<UIManager>();
     }
 
     void Update()
@@ -111,6 +117,7 @@ public class Player : MonoBehaviour
         else
         {
             _health -= 1;
+            _uiManager.UpdateLives(_health);
         }
 
         if (_health <= 0)
@@ -151,5 +158,11 @@ public class Player : MonoBehaviour
         yield return new WaitForSeconds(5);
 
         _hasSpeed = false;
+    }
+
+    public void AddScore(int points)
+    {
+        _score += points;
+        _uiManager.UpdateScore(_score);
     }
 }

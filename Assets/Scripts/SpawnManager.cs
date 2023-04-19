@@ -25,12 +25,11 @@ public class SpawnManager : MonoBehaviour
     {
         while (!_stopSpawning)
         {
-            yield return new WaitForSeconds(3);
-
             float randomX = Random.Range(-9f, 9f);
             Vector3 randomPos = new Vector3(randomX, 8, 0);
 
             Instantiate(_enemyPrefab, randomPos, Quaternion.identity, _enemyContainer);
+            yield return new WaitForSeconds(3);
         }
     }
 
@@ -39,7 +38,6 @@ public class SpawnManager : MonoBehaviour
         while (!_stopSpawning)
         {
             float randomWaitTime = Random.Range(5f, 10f);
-            yield return new WaitForSeconds(randomWaitTime);
 
             float randomX = Random.Range(-9f, 9f);
             Vector3 randomPos = new Vector3(randomX, 8, 0);
@@ -47,8 +45,9 @@ public class SpawnManager : MonoBehaviour
 
             if (_powerupPrefabs[randomPowerup] != null)
             {
-                Instantiate(_powerupPrefabs[2], randomPos, Quaternion.identity);
+                Instantiate(_powerupPrefabs[randomPowerup], randomPos, Quaternion.identity);
             }
+            yield return new WaitForSeconds(randomWaitTime);
         }
     }
 
