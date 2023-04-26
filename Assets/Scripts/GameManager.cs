@@ -7,11 +7,18 @@ public class GameManager : MonoBehaviour
 {
     private bool _isGameOver = false;
 
+    public bool IsCoopMode = false;
+
     void Update()
     {
         if (_isGameOver && Input.GetKeyDown(KeyCode.R))
         {
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        }
+
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            Application.Quit();
         }
     }
 

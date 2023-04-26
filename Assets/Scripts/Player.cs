@@ -32,29 +32,85 @@ public class Player : MonoBehaviour
     [SerializeField]
     private GameObject _shield;
 
+    private GameManager _gameManager;
+
     private UIManager _uiManager;
+
+    [SerializeField]
+    private GameObject[] _fireEngine;
+
+    [SerializeField]
+    private AudioClip _laserSound;
+    private AudioSource _playerAudio;
+
+    public bool isPlayerOne = false;
+    public bool isPlayerTwo = false;
+
+    float horizontalInput;
+    float verticalInput;
 
     void Start()
     {
-        transform.position = Vector3.zero;
         _spawnManager = GameObject.Find("SpawnManager").GetComponent<SpawnManager>();
         _uiManager = GameObject.Find("Canvas").GetComponent<UIManager>();
+        _gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
+        _playerAudio = GetComponent<AudioSource>();
+
+        if (_spawnManager == null)
+        {
+            Debug.LogError("Spawn Manager is NULL");
+        }
+        if (_uiManager == null)
+        {
+            Debug.LogError("UI Manager is NULL");
+        }
+        if (_gameManager == null)
+        {
+            Debug.LogError("Game Manager is NULL");
+        }
+        if (_playerAudio == null)
+        {
+            Debug.LogError("Audio Source is NULL");
+        }
+
+        if (!_gameManager.IsCoopMode)
+        {
+            transform.position = Vector3.zero;
+        }
     }
 
     void Update()
     {
         CalculateMovement();
 
-        if (Input.GetKey(KeyCode.Space) && Time.time > _canFire)
+        if (isPlayerOne)
         {
-            FireLaser();
+            if (Input.GetKey(KeyCode.Space) && Time.time > _canFire)
+            {
+                FireLaser();
+            }
+        }
+        else if (isPlayerTwo)
+        {
+            if (Input.GetKey(KeyCode.Return) && Time.time > _canFire)
+            {
+                FireLaser();
+            }
         }
     }
 
     void CalculateMovement()
     {
-        float horizontalInput = Input.GetAxis("Horizontal");
-        float verticalInput = Input.GetAxis("Vertical");
+        if (isPlayerOne)
+        {
+            horizontalInput = Input.GetAxis("Horizontal1");
+            verticalInput = Input.GetAxis("Vertical1");
+        }
+        else if (isPlayerTwo)
+        {
+            horizontalInput = Input.GetAxis("Horizontal2");
+            verticalInput = Input.GetAxis("Vertical2");
+        }
 
         Vector3 direction = new Vector3(horizontalInput, verticalInput, 0);
 
@@ -106,6 +162,8 @@ public class Player : MonoBehaviour
                 Quaternion.identity
             );
         }
+
+        _playerAudio.PlayOneShot(_laserSound, 0.5f);
     }
 
     public void Damage()
@@ -117,6 +175,16 @@ public class Player : MonoBehaviour
         else
         {
             _health -= 1;
+
+            if (_health == 2)
+            {
+                _fireEngine[0].SetActive(true);
+            }
+            else if (_health == 1)
+            {
+                _fireEngine[1].SetActive(true);
+            }
+
             _uiManager.UpdateLives(_health);
         }
 
@@ -164,5 +232,14 @@ public class Player : MonoBehaviour
     {
         _score += points;
         _uiManager.UpdateScore(_score);
+    }
+
+    void OnTriggerEnter2D(Collider2D collider)
+    {
+        if (collider.tag == "EnemyLaser")
+        {
+            Destroy(collider.gameObject);
+            Damage();
+        }
     }
 }

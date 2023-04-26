@@ -9,9 +9,29 @@ public class Enemy : MonoBehaviour
 
     private Player _player;
 
+    private Animator _enemyAnimator;
+
+    [SerializeField]
+    private AudioClip _explosionSound;
+
+    [SerializeField]
+    private AudioClip _laserSound;
+    private AudioSource _enemyAudio;
+
+    [SerializeField]
+    private GameObject _laserPrefab;
+
     void Start()
     {
         _player = GameObject.FindWithTag("Player").GetComponent<Player>();
+        if (_player == null)
+        {
+            Debug.LogError("Player is NULL");
+        }
+        _enemyAnimator = GetComponent<Animator>();
+        _enemyAudio = GetComponent<AudioSource>();
+
+        StartCoroutine(FireLaser());
     }
 
     void Update()
@@ -32,7 +52,14 @@ public class Enemy : MonoBehaviour
             Player player = collider.GetComponent<Player>();
             if (player != null)
                 player.Damage();
-            Destroy(gameObject);
+
+            _enemyAnimator.SetTrigger("OnEnemyDeath");
+            _enemySpeed = 0;
+
+            _enemyAudio.PlayOneShot(_explosionSound, 1f);
+
+            Destroy(GetComponent<Collider2D>());
+            Destroy(gameObject, 2.8f);
         }
         else if (collider.tag == "Laser")
         {
@@ -41,7 +68,34 @@ public class Enemy : MonoBehaviour
             {
                 _player.AddScore(10);
             }
-            Destroy(gameObject);
+
+            _enemyAnimator.SetTrigger("OnEnemyDeath");
+            _enemySpeed = 0;
+
+            _enemyAudio.PlayOneShot(_explosionSound, 1f);
+
+            Destroy(GetComponent<Collider2D>());
+            Destroy(gameObject, 2.8f);
+        }
+    }
+
+    IEnumerator FireLaser()
+    {
+        float randomTime = Random.Range(2f, 5f);
+        yield return new WaitForSeconds(randomTime);
+
+        while (_enemySpeed != 0)
+        {
+            Instantiate(
+                _laserPrefab,
+                transform.position + new Vector3(0, -1.7f, 0),
+                Quaternion.Euler(0, 0, 180)
+            );
+
+            _enemyAudio.PlayOneShot(_laserSound, 0.5f);
+
+            randomTime = Random.Range(2f, 5f);
+            yield return new WaitForSeconds(randomTime);
         }
     }
 }
